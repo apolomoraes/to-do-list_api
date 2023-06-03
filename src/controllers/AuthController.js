@@ -1,6 +1,6 @@
 const User = require('../database/models/User');
 const { compare } = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const generateToken = require('../utils/token');
 
 class AuthController {
   async register(req, res) {
@@ -31,7 +31,9 @@ class AuthController {
 
       user.password = undefined;
 
-      return res.json(user);
+      const token = generateToken({ id: user.id });
+
+      return res.json({ user });
 
     } catch (error) {
       return res.status(500).json({
@@ -56,17 +58,15 @@ class AuthController {
     if (!await compare(password, user.password) || email !== user.email) {
       return res.status(400).json({
         error: "Erro",
-        message: "Email ou senha inválido(a)",
+        message: "Email e/ou senha inválido(a)",
       });
     }
 
     user.password = undefined;
 
-    const token = jwt.sign({
-      id: user.id,
-    })
+    const token = generateToken({ id: user.id });
 
-    return res.json(user);
+    return res.json({ user, token });
   }
 }
 
