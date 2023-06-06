@@ -1,6 +1,8 @@
-const User = require('../database/models/User');
+const User = require('../models/User');
 const { compare } = require('bcryptjs');
-const generateToken = require('../utils/token');
+const generateToken = require('../../utils/token');
+const crypto = require('crypto');
+const mailer = require('../../modules/mailer');
 
 class AuthController {
   async register(req, res) {
@@ -67,6 +69,58 @@ class AuthController {
     const token = generateToken({ id: user.id });
 
     return res.json({ user, token });
+  }
+
+  async recoverPassword(req, res) {
+    const { email } = req.body;
+
+    try {
+      const user = await User.findOne({ email });
+
+      if (!user) {
+        return res.status(400).json({
+          error: "Erro",
+          message: "Usuário não encontrado",
+        });
+      };
+
+      const token = crypto.randomBytes(20).toString('hex');
+
+      const now = new Date();
+
+      now.setHours(now.getHours() + 1);
+
+      await User.findByIdAndUpdate(user.id, {
+        '$set': {
+          passwordResetToken: token,
+          passwordResetExpires: now,
+        },
+      });
+
+      mailer.sendMail({
+        to: email,
+        from: 'vlogsapolo@gmail.com',
+        template: 'auth/recover_password',
+        context: { token },
+      }, (error) => {
+        if (error) {
+          console.log(error);
+          return res.status(400).json({
+            error: "Erro",
+            message: error,
+          });
+        };
+
+        return res.status(200).json();
+      });
+
+    } catch (error) {
+      // console.log(error);
+      res.status(500).json({
+        error: "Erro",
+        message: error,
+      })
+    }
   }
 }
 

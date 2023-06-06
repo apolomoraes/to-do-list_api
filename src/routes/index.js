@@ -4,7 +4,7 @@ const projectRoutes = require('../routes/project.routes');
 
 const routes = Router();
 
-routes.use('/register', authRoutes);
+routes.use('/users', authRoutes);
 routes.use('/project', projectRoutes);
 
 module.exports = routes;
