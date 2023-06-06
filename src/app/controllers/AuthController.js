@@ -104,7 +104,6 @@ class AuthController {
         context: { token },
       }, (error) => {
         if (error) {
-          console.log(error);
           return res.status(400).json({
             error: "Erro",
             message: error,
@@ -115,7 +114,51 @@ class AuthController {
       });
 
     } catch (error) {
-      // console.log(error);
+      res.status(500).json({
+        error: "Erro",
+        message: error,
+      })
+    }
+  }
+
+  async resetPassword(req, res) {
+    const { email, token, password } = req.body;
+
+    try {
+      const user = await User.findOne({ email })
+        .select('+passwordResetToken passwordResetExpires');
+
+      if (!user) {
+        return res.status(400).json({
+          error: "Erro",
+          message: "Usuário não encontrado",
+        });
+      }
+
+      if (token !== user.passwordResetToken) {
+        return res.status(400).json({
+          error: "Erro",
+          message: "Token inválido",
+        });
+      }
+
+      const now = new Date();
+
+      if (now > user.passwordResetExpires) {
+        return res.status(400).json({
+          error: "Erro",
+          message: "Token expirado",
+        });
+      }
+
+      user.password = password;
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+
+      await user.save();
+
+      return res.status(200).json();
+    } catch (error) {
       res.status(500).json({
         error: "Erro",
         message: error,
