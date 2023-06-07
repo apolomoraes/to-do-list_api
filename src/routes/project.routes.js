@@ -8,6 +8,10 @@ const projectController = new ProjectController();
 
 projectRoutes.use(ensureAuthenticated);
 
-projectRoutes.get('/', projectController.create);
+projectRoutes.get('/', projectController.list);
+projectRoutes.get('/:projectId', projectController.show);
+projectRoutes.post('/', projectController.create);
+projectRoutes.put('/:projectId', projectController.update);
+projectRoutes.delete('/:projectId', projectController.delete);
 
 module.exports = projectRoutes;
