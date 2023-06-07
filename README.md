@@ -11,6 +11,10 @@ API de projetos e tarefas
 
 <br>
 
+<p align="center">
+  <img src=".github/schema.png" width="100%">
+</p>
+
 ## 🚀 Tecnologias
 
 Esse projeto foi desenvolvido com as seguintes tecnologias:
